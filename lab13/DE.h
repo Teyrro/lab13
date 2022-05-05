@@ -4,96 +4,29 @@
 #include <list>
 #include <cmath>
 #include <functional>
+#include <iomanip>
 
 class Euler {
 protected:
-	double x, xEnd, h, eps;
+	double x, xEnd, h, eps, realEps;
 	std::vector<double> y;
 	std::list<std::vector<double>> list;
 	std::function<double(double, std::vector<double>, double)> MoreFunc;
 
+	void VectorSum(std::vector<double>& x, std::vector<double> const& y);
+	void VectorMul(std::vector<double>& y, double x);
 	std::vector<double> Func(double x, std::vector<double> equation, double step);
 	virtual std::vector<double> TemplateFunc(double x, std::vector<double> y, double h);
 	void PrintList(std::list<std::vector<double>> const& list);
 	void PrintY(std::vector<double> y);
-	virtual void MethodFA(std::vector<double>& y, double h, std::list<std::vector<double>>& list) {
-		std::vector<double> yTemp, newY(y);
-		double newX = x;
-		int size = ((xEnd - x) + h * 0.1) / h;
-		for (int i(0); i < size; i++) {
-			yTemp = TemplateFunc(newX, newY, h);
-
-			//std::cout << "x = " << x << "\n";
-			//PrintY(y);
-			//std::cout << " + ";
-			//PrintY(Func(x, y, 1));
-			//std::cout << " * " << h << " = ";
-			//PrintY(yTemp);
-			//std::cout << "\n\n";
-
-			newX += h;
-			newY = yTemp;
-			list.push_back(newY);
-		}
-	}
-	void DeleteUnusefullValue(std::list<std::vector<double>>& list, std::list<std::vector<double>>& listTemp) {
-		std::list<std::vector<double>> newList;
-		//PrintList(listTemp);
-		//std::cout << "\n";
-		int difference(listTemp.size() / list.size() - 1);
-		while (!listTemp.empty()) {
-			newList.push_back(listTemp.front());
-
-			for (int i(0); i < difference + 1; i++) {
-				listTemp.pop_front();
-			}
-
-			//PrintList(newList);
-			//std::cout << "\n";
-			//PrintList(listTemp);
-			//std::cout << "\n";
-		}
-		listTemp = newList;
-		//PrintList(listTemp);
-	}
-	bool Compare(std::list<std::vector<double>>& list, std::list<std::vector<double>>& listTemp) {
-		DeleteUnusefullValue(list, listTemp);
-		PrintList(list);
-		std::cout << "\n";
-		PrintList(listTemp);
-		std::cout << "\n";
-
-		auto it(list.begin()), it2(listTemp.begin());
-		double delta(0);
-
-		for (it, it2; it != list.end(); it++, it2++) {
-
-			for (int i(0); i < y.size(); i++) {
-
-				if (abs((*it)[i] - (*it2)[i]) > delta) {
-					delta = abs((*it)[i] - (*it2)[i]);
-					//PrintY((*it)), PrintY((*it2));
-					//std::cout << "\ny_" << i << "(" << (*it)[i] << ") - " << "y2_" << i << "(" << (*it2)[i] << ") " << abs((*it)[i] - (*it2)[i]) << " < " << 3 * eps << "\n";
-				}
-				//std::cout << "y_" << i << "(" << (*it)[i] << ") - " << "y2_" << i << "(" << (*it2)[i] << ") " << abs((*it)[i] - (*it2)[i]) << " < " << 3 * eps << "\n";
-			}
-
-		}
-		if (delta < 3 * eps) {
-			std::cout << "delta: " << delta << " < 3 * eps: (" << 3 * eps << ")" "\n";
-			return false;
-		}
-
-		list = listTemp;
-		std::cout << "Required precision not found" << " delta: " << delta << " > 3 * eps: (" << 3 * eps << ")" << "\n\n";
-		listTemp.clear();
-		return true;
-	}
+	virtual void MethodFA(std::vector<double>& y, double h, std::list<std::vector<double>>& list);
+	void DeleteUnusefullValue(std::list<std::vector<double>>& list, std::list<std::vector<double>>& listTemp);
+	bool Compare(std::list<std::vector<double>>& list, std::list<std::vector<double>>& listTemp);
 public:
-	Euler(double X0, double Xn, double h, std::vector<double> Y, double e, std::function<double(double, std::vector<double>, double)> func) 
-	: x(X0), xEnd(Xn), y(Y), h(h), eps(e), MoreFunc(func)
+	Euler(double X0, double Xn, double h, std::vector<double> Y, double e, std::function<double(double, std::vector<double>, double)> func, int prec) 
+	: x(X0), xEnd(Xn), y(Y), h(h), eps(e), MoreFunc(func), realEps(3 * eps)
 	{
-
+		std::cout.precision(prec+1);
 	}
 
 	virtual void FindAnswer() {	
@@ -105,13 +38,13 @@ public:
 			h /= 2;
 			std::cout << "h = " << h << "\n";
 			MethodFA(y, h, listTemp);
+			//PrintList(listTemp);
 		
 			std::cout << "Size list " << list.size() << ", Size listH/2 " << listTemp.size() << "\n";
 			//PrintY(y);
 		} while (Compare(list, listTemp));
 	}
 };
-
 
 class SimpModEulerT : public Euler {
 protected:
@@ -144,8 +77,8 @@ protected:
 		return y;
 	}
 public:
-	SimpModEulerT(double X0, double Xn, double n, std::vector<double> Y, double e, std::function<double(double, std::vector<double>, double)> func)
-	: Euler(X0, Xn, n, Y, e, func) 
+	SimpModEulerT(double X0, double Xn, double n, std::vector<double> Y, double e, std::function<double(double, std::vector<double>, double)> func, int prec)
+	: Euler(X0, Xn, n, Y, e, func, prec) 
 	{
 
 	}
@@ -188,26 +121,15 @@ class SimpModEulerD : public Euler {
 		}
 	}
 public:
-	SimpModEulerD(double X0, double Xn, double n, std::vector<double> Y, double e, std::function<double(double, std::vector<double>, double)> func)
-	: Euler(X0, Xn, n, Y, e, func) 
+	SimpModEulerD(double X0, double Xn, double n, std::vector<double> Y, double e, std::function<double(double, std::vector<double>, double)> func, int prec)
+	: Euler(X0, Xn, n, Y, e, func, prec) 
 	{
 
 	}
 };
 
 class Runge_Kutta_4 : public Euler {
-	void VectorSum	(std::vector<double>& x, std::vector<double> const & y) {
-		for (int i(0); i < y.size(); i++) {
-			x[i] += y[i];
-		}
-	}
-
-	void VectorMul(std::vector<double>& y, double x) {
-		for (int i(0); i < y.size(); i++) {
-			y[i] *= x;
-		}
-	}
-
+protected:
 	virtual std::vector<double> TemplateFunc(double x, std::vector<double> y, double h) {
 		std::vector<double> equation(y);
 		std::vector<double> K(y.size());
@@ -234,7 +156,6 @@ class Runge_Kutta_4 : public Euler {
 		//std::cout << "\n";
 		return equation;
 	}
-
 	virtual void MethodFA(std::vector<double>& y, double h, std::list<std::vector<double>>& list) {
 		std::vector<double> yTemp, newY(y);
 		double newX = x;
@@ -249,12 +170,88 @@ class Runge_Kutta_4 : public Euler {
 		}
 	}
 public:
-	Runge_Kutta_4(double X0, double Xn, double h, std::vector<double> Y ,double e, std::function<double(double, std::vector<double>, double)> func)
-	: Euler(X0, Xn, h, Y, e, func) 
+	Runge_Kutta_4(double X0, double Xn, double h, std::vector<double> Y ,double e, std::function<double(double, std::vector<double>, double)> func, int prec)
+	: Euler(X0, Xn, h, Y, e, func, prec) 
 	{
-		
+		realEps = 15 * eps;
 	}
 
-	
 };
 
+//class Miln : Runge_Kutta_4 {
+//	void MilnFA(std::vector<double>& y, double h, std::list<std::vector<double>>& list) {
+//		std::vector<double> yTemp, yi, newY(y);
+//		double newX = x;
+//		int size = ((xEnd - x) + h * 0.1) / h;
+//		for (int i(3); i < size; i++) {
+//			//yTemp = TemplateTemplateFunc(newX, newY, h);
+//
+//			//std::cout << "x = " << x << "\n";
+//			//PrintY(y);
+//			//std::cout << " + ";
+//			//PrintY(Func(x, y, 1));
+//			//std::cout << " * " << h << " = ";
+//			//PrintY(yTemp);
+//			//std::cout << "\n\n";
+//
+//			newX += h;
+//			newY = yTemp;
+//			list.push_back(newY);
+//		}
+//	}
+//
+//	std::vector<double> TemplateTemplateFunc(double x, std::vector<double> y, int index, std::list<std::vector<double>>& list, double h) {
+//		std::vector<double> equation(y);
+//		std::vector<double> tmpEquation(Func(x, equation, h));
+//		auto it = list.begin();
+//		for (it; it != list.end(); it++) {
+//			
+//			
+//		}
+//		return equation;
+//	}
+//
+//	virtual void MethodFA(std::vector<double>& y, double h, std::list<std::vector<double>>& list, int size) {
+//		std::vector<double> yTemp, newY(y);
+//		double newX = x;
+//		for (int i(0); i < size; i++) {
+//
+//
+//			yTemp = TemplateFunc(newX, newY, h);
+//
+//			//std::cout << "x = " << x << "\n";
+//			//PrintY(y);
+//			//std::cout << " + ";
+//			//PrintY(Func(x, y, 1));
+//			//std::cout << " * " << h << " = ";
+//			//PrintY(yTemp);
+//			//std::cout << "\n\n";
+//
+//			newX += h;
+//			newY = yTemp;
+//			list.push_back(newY);
+//		}
+//	}
+//public:
+//	Miln(double X0, double Xn, double h, std::vector<double> Y, double e, std::function<double(double, std::vector<double>, double)> func)
+//		: Runge_Kutta_4(X0, Xn, h, Y, e, func) {
+//		if (((xEnd - x) + h * 0.1) / h < 3)
+//			throw;
+//	}
+//
+//	virtual void FindAnswer() {
+//		std::list<std::vector<double>> listTemp(list);
+//		double factor(1);
+//		int size = ((xEnd - x) + h * 0.1) / h;
+//		MethodFA(y, h, list, 3);
+//		do {
+//			h /= 2;
+//			std::cout << "h = " << h << "\n";
+//			MethodFA(y, h, listTemp, size);
+//
+//			std::cout << "Size list " << list.size() << ", Size listH/2 " << listTemp.size() << "\n";
+//			//PrintY(y);
+//		} while (Compare(list, listTemp));
+//	}
+//
+//};
