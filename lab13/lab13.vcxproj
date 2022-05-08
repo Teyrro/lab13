@@ -141,9 +141,17 @@
   <ItemGroup>
     <ClCompile Include="Euler.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="NE.cpp" />
+    <ClCompile Include="Runge_Kutta_4.cpp" />
+    <ClCompile Include="SimpModEulerD.cpp" />
+    <ClCompile Include="SimpModEulerT.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DE.h" />
+    <ClInclude Include="NE.h" />
+    <ClInclude Include="Runge_Kutta_4.h" />
+    <ClInclude Include="SimpModEulerD.h" />
+    <ClInclude Include="SimpModEulerT.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
