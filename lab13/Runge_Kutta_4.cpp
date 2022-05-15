@@ -19,8 +19,6 @@ std::vector<double> Runge_Kutta_4::TemplateFunc(double x, std::vector<double> y,
 		//PrintY(K);
 		//std::cout << "\n";
 
-
-
 		for (int i(0); i < equation.size(); i++) {
 
 			equation[i] += p * K[i] * (h / 6);
@@ -38,16 +36,14 @@ std::vector<double> Runge_Kutta_4::TemplateFunc(double x, std::vector<double> y,
 }
 
 void Runge_Kutta_4::MethodFA(std::vector<double>& y, double h, std::list<std::vector<double>>& list) {
-	std::vector<double> yTemp, newY(y);
+	std::vector<double> yTemp(y);
 	double newX = x;
 	int size = ((xEnd - x) + h * 0.1) / h;
 	for (int i(0); i < size; i++) {
-		yTemp = TemplateFunc(newX, newY, h);
-
+		yTemp = TemplateFunc(newX, yTemp, h);
 
 		newX += h;
-		newY = yTemp;
-		list.push_back(newY);
+		list.push_back(yTemp);
 	}
 
 }

@@ -8,7 +8,7 @@
 
 class Euler {
 protected:
-	double x, xEnd, h, eps, realEps;
+	double x, xEnd, h, tmpH, eps, realEps;
 	int index, stepCount;
 	std::vector<double> y;
 	std::list<std::vector<double>> list;
@@ -16,6 +16,7 @@ protected:
 
 
 	void PrintList(std::list<std::vector<double>> const& list);
+	void PrintList(std::list<std::vector<double>> const& list, double x);
 	void PrintY(std::vector<double> y);
 
 	void VectorSum(std::vector<double>& x, std::vector<double> const& y);
@@ -30,7 +31,7 @@ protected:
 
 public:
 	Euler(double X0, double Xn, double h, std::vector<double> Y, double e, std::function<double(double, std::vector<double>, double)> func, int prec)
-	: x(X0), xEnd(Xn), y(Y), h(h), eps(e), MoreFunc(func), realEps(3 * eps)
+	: x(X0), xEnd(Xn), y(Y), h(h), tmpH(h), eps(e), MoreFunc(func), realEps(3 * eps)
 	{
 		std::cout.precision(prec+1);
 

@@ -12,9 +12,21 @@ void Euler::PrintY(std::vector<double> y) {
 }
 void Euler::PrintList(std::list<std::vector<double>> const& list) {
 	//std::cout << "ListY: \n";
+	
 	for (auto it(list.begin()); it != list.end(); it++) {
 		PrintY((*it));
-		//std::cout << "\n";
+		std::cout << "\n";
+	}
+}
+void Euler::PrintList(std::list<std::vector<double>> const& list, double h) {
+	//std::cout << "ListY: \n";
+	double newX(x);
+
+	for (auto it(list.begin()); it != list.end(); it++) {
+		std::cout << "X " << newX << "\t";
+		PrintY((*it));
+		std::cout << "\n";
+		newX += h;
 	}
 }
 
@@ -30,11 +42,11 @@ void Euler::VectorMul(std::vector<double>& y, double x) {
 }
 
 void Euler::MethodFA(std::vector<double>& y, double h, std::list<std::vector<double>>& list) {
-	std::vector<double> yTemp, newY(y);
+	std::vector<double> yTemp(y);
 	double newX = x;
 	int size = ((xEnd - x) + h * 0.1) / h;
 	for (int i(0); i < size; i++) {
-		yTemp = TemplateFunc(newX, newY, h);
+		yTemp = TemplateFunc(newX, yTemp, h);
 
 		//std::cout << "x = " << x << "\n";
 		//PrintY(y);
@@ -45,8 +57,7 @@ void Euler::MethodFA(std::vector<double>& y, double h, std::list<std::vector<dou
 		//std::cout << "\n\n";
 
 		newX += h;
-		newY = yTemp;
-		list.push_back(newY);
+		list.push_back(yTemp);
 	}
 }
 
@@ -83,9 +94,11 @@ void Euler::DeleteUnusefullValue(std::list<std::vector<double>>& list, std::list
 bool Euler::Compare(std::list<std::vector<double>>& list, std::list<std::vector<double>>& listTemp) {
 	DeleteUnusefullValue(list, listTemp);
 
-	PrintList(list);
+	std::cout << "h = " << h*2 << "\n";
+	PrintList(list, tmpH);
 	std::cout << "\n";
-	PrintList(listTemp);
+	std::cout << "h = " << h << "\n";
+	PrintList(listTemp, tmpH);
 	std::cout << "\n";
 
 	auto it(list.begin()), it2(listTemp.begin());
@@ -119,6 +132,7 @@ bool Euler::Compare(std::list<std::vector<double>>& list, std::list<std::vector<
 std::vector<double> Euler::TemplateFunc(double x, std::vector<double> y, double h) {
 	std::vector<double> equation(y);
 	std::vector<double> tmpEquation(Func(x, equation, h));
+
 	for (int i(0); i < equation.size(); i++) {
 		equation[i] += tmpEquation[i];
 	}
@@ -132,6 +146,22 @@ std::vector<double> Euler::Func(double x, std::vector<double> equation, double s
 	}
 	NewEquation[equation.size() - 1] = MoreFunc(x, equation, step);
 	return NewEquation;
+}
+
+void Euler::FindAnswer() {
+
+	std::list<std::vector<double>> listTemp(list);
+	double factor(1);
+	std::cout << h << "\n";
+	MethodFA(y, h, list);
+	do {
+		h /= 2;
+		MethodFA(y, h, listTemp);
+		//PrintList(listTemp);
+
+		std::cout << "Size list " << list.size() << ", Size listH/2 " << listTemp.size() << "\n";
+		//PrintY(y);
+	} while (Compare(list, listTemp));
 }
 
 double Euler::F(double x) {
@@ -154,10 +184,9 @@ double Euler::F(double x) {
 }
 
 void Euler::NEForFindingK(double nextValueX, double nextValueY) {
-	double step(1);
-	stepCount = (((nextValueX - x) + h * 0.1) / h) - 1;
-	short i(1);
-	double left, right, need(F(x)), newX(x);
+	stepCount = ((abs(nextValueX - x) + h * 0.1) / h) - 1;
+	float i(tmpH);
+	double left, right, need(F(x)), newX(nextValueX);
 	if (need < nextValueY) {
 		left = x;
 		while (need < nextValueY) {
@@ -168,16 +197,15 @@ void Euler::NEForFindingK(double nextValueX, double nextValueY) {
 	}
 	else {
 		right = x;
-		i *= -1;
 		while (need > nextValueY) {
-			newX += i;
+			newX -= i;
 			need = F(newX);
 		}
 		left = newX;
 	}
 
-	PrintList(list);
-	std::cout << "\n";
+	//PrintList(list);
+	//std::cout << "\n";
 	using std::placeholders::_1;
 	NE findCoord(left, right, std::bind(&Euler::F, this, _1), nextValueY);
 	//NE findCoord(nextValueY1, nextValueY2, *this);
@@ -187,20 +215,4 @@ void Euler::NEForFindingK(double nextValueX, double nextValueY) {
 	//	std::cout << "Input Other Interval, current value: " << a << " * " << b << "\n";
 	//}
 
-}
-
-void Euler::FindAnswer() {
-
-	std::list<std::vector<double>> listTemp(list);
-	double factor(1);
-	MethodFA(y, h, list);
-	do {
-		h /= 2;
-		std::cout << "h = " << h << "\n";
-		MethodFA(y, h, listTemp);
-		//PrintList(listTemp);
-
-		std::cout << "Size list " << list.size() << ", Size listH/2 " << listTemp.size() << "\n";
-		//PrintY(y);
-	} while (Compare(list, listTemp));
 }

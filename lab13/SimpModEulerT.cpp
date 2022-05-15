@@ -1,12 +1,12 @@
 #include "SimpModEulerT.h"
 
 void SimpModEulerT::MethodFA(std::vector<double>& y, double h, std::list<std::vector<double>>& list) {
-	std::vector<double> yTemp, yi, newY(y);
+	std::vector<double> yTemp(y), yi, newY(y);
 	double newX(x);
 	int size = ((xEnd - x) + h * 0.1) / h;
 	for (int i(0); i < size; i++) {
-		yi = TemplateFunc(newX, newY, newY, h / 2);
-		yTemp = TemplateFunc(newX + h / 2, newY, yi, h);
+		yi = TemplateFunc(newX, yTemp, yTemp, h / 2);
+		yTemp = TemplateFunc(newX + h / 2, yTemp, yi, h);
 
 		//std::cout << "x = " << newX << "\n";
 		//PrintY(newY);
@@ -17,8 +17,7 @@ void SimpModEulerT::MethodFA(std::vector<double>& y, double h, std::list<std::ve
 		//std::cout << "\n\n";
 
 		newX += h;
-		newY = yTemp;
-		list.push_back(newY);
+		list.push_back(yTemp);
 	}
 }
 

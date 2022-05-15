@@ -3,13 +3,13 @@
 
 
 void SimpModEulerD::MethodFA(std::vector<double>& y, double h, std::list<std::vector<double>>& list) {
-	std::vector<double> yTemp, yi, newY(y);
+	std::vector<double> yTemp(y), yi;
 	double newX = x;
 	int size = ((xEnd - x) + h * 0.1) / h;
 	for (int i(0); i < size; i++) {
-		yi = TemplateFunc(newX, newY, newY, h / 2);
-		yTemp = TemplateFunc(newX + h, newY, yi, h / 2);
-		Add(yTemp, Func(newX, newY, h / 2));
+		yi = TemplateFunc(newX, yTemp, yTemp, h / 2);
+		yTemp = TemplateFunc(newX + h, yTemp, yi, h / 2);
+		Add(yTemp, Func(newX, yTemp, h / 2));
 
 		//std::cout << "x = " << newX << "\n";
 		//PrintY(newY);
@@ -19,8 +19,7 @@ void SimpModEulerD::MethodFA(std::vector<double>& y, double h, std::list<std::ve
 		//std::cout << "\n\n";
 
 		newX += h;
-		newY = yTemp;
-		list.push_back(newY);
+		list.push_back(yTemp);
 	}
 }
 

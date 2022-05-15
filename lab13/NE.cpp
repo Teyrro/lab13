@@ -22,11 +22,12 @@ double NE::CalculateHord_C() {
 void NE::MPD(double eps, bool isMod) {
 	double C , e;
 	int i(0);
-
+	//std::cout.precision(eps);
 	std::function<double(NE&) > PtrFunc = &NE::CalculateMPD_C;
 	if (isMod) {
 		PtrFunc = &NE::CalculateHord_C;
 	}
+
 	int count(1);
 	do {
 		//std::cout<< std::fixed << Interval[0] << " * " << Func(Interval[1]) << " - " << Interval[1] << " * " << Func(Interval[0]) << " / " << Func(Interval[1]) << " - " << Func(Interval[0]) << '\n';
