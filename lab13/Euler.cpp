@@ -4,12 +4,26 @@
 #include <iomanip>
 
 void Euler::PrintY(std::vector<double> y) {
+	
 	std::cout << "Y = ( ";
 	for (auto& ptr : y) {
 		std::cout << std::fixed << ptr << " ";
 	}
+
 	std::cout << ") ";
 }
+
+void Euler::PrintY(std::vector<double> y, double x) {
+
+	std::cout << "Y = ( ";
+	for (auto& ptr : y) {
+		std::cout << std::fixed << ptr << " ";
+	}
+	std::cout << y[0] / exp(x) << " ";
+	std::cout << exp(x) << " ";
+	std::cout << ") ";
+}
+
 void Euler::PrintList(std::list<std::vector<double>> const& list) {
 	//std::cout << "ListY: \n";
 	
@@ -20,11 +34,15 @@ void Euler::PrintList(std::list<std::vector<double>> const& list) {
 }
 void Euler::PrintList(std::list<std::vector<double>> const& list, double h) {
 	//std::cout << "ListY: \n";
-	double newX(x);
+	double newX(x + h);
+	std::cout << "\tx\t\t   y\t\ty'\t   y/e^x\t e^x\n";
+	std::cout << "X " << x << "\t";
+	PrintY(y, x);
+	std::cout << "\n";
 
 	for (auto it(list.begin()); it != list.end(); it++) {
 		std::cout << "X " << newX << "\t";
-		PrintY((*it));
+		PrintY((*it), newX);
 		std::cout << "\n";
 		newX += h;
 	}
@@ -43,7 +61,7 @@ void Euler::VectorMul(std::vector<double>& y, double x) {
 
 void Euler::MethodFA(std::vector<double>& y, double h, std::list<std::vector<double>>& list) {
 	std::vector<double> yTemp(y);
-	double newX = x;
+	double newX(x);
 	int size = ((xEnd - x) + h * 0.1) / h;
 	for (int i(0); i < size; i++) {
 		yTemp = TemplateFunc(newX, yTemp, h);
@@ -66,13 +84,13 @@ void Euler::DeleteUnusefullValue(std::list<std::vector<double>>& list, std::list
 
 	//PrintList(listTemp);
 	//std::cout << "\n";
-	auto it(list.begin()), it2(TempList.begin()) ;
+	auto it(list.begin());
 	int difference(listTemp.size() / list.size() - 1);
 	while (!listTemp.empty()) {
 		for (int i(0); i < difference; i++) {
 			listTemp.pop_front();
 		}
-		
+		//auto it2(TempList.begin());
 		//VectorSum(*it2, *it);
 		//VectorMul(*it2, 1 / 3);
 		//VectorSum(*it2, listTemp.front());
@@ -81,7 +99,7 @@ void Euler::DeleteUnusefullValue(std::list<std::vector<double>>& list, std::list
 		listTemp.pop_front();
 
 
-		it++, it2++;
+		//it++;	
 		//PrintList(newList);
 		//std::cout << "\n";
 		//PrintList(listTemp);
@@ -183,6 +201,14 @@ double Euler::F(double x) {
 	return answer;
 }
 
+//Y'' = func(x,y)
+//Y(0) = 1
+//Y'(0) = 0
+
+//Y'' = func(x,y)
+//Y(0) = 1
+//Y(1) = 2.718
+
 void Euler::NEForFindingK(double nextValueX, double nextValueY) {
 	stepCount = ((abs(nextValueX - x) + h * 0.1) / h) - 1;
 	float i(tmpH);
@@ -204,13 +230,15 @@ void Euler::NEForFindingK(double nextValueX, double nextValueY) {
 		left = newX;
 	}
 
-	//PrintList(list);
-	//std::cout << "\n";
+
 	using std::placeholders::_1;
-	NE findCoord(left, right, std::bind(&Euler::F, this, _1), nextValueY);
+	NE findCoord(left, right, std::bind(&Euler::F, this, _1), nextValueY, prec);
 	//NE findCoord(nextValueY1, nextValueY2, *this);
-	findCoord.MPD(eps, true);
+	findCoord.MPD(eps, false);
 	
+	MethodFA(y, tmpH, list);
+	PrintList(list, tmpH);
+	std::cout << "\n";
 	//else {
 	//	std::cout << "Input Other Interval, current value: " << a << " * " << b << "\n";
 	//}

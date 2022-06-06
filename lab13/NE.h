@@ -20,10 +20,10 @@ public:
 		data >> Interval[0];
 		data >> Interval[1];
 	}
-	NE(double leftBorder, double rightBorder, std::function<double(double)> Func, double dAbscissa)
+	NE(double leftBorder, double rightBorder, std::function<double(double)> Func, double dAbscissa, int prec)
 		: Interval(2), Func(Func), dAbscissa(dAbscissa)
 	{
-		std::cout.precision(10);
+		std::cout.precision(prec);
 		Interval[0] = leftBorder;
 		Interval[1] = rightBorder;
 	}
